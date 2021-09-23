@@ -27,9 +27,9 @@ namespace DelFile
         /// </summary>
         private void InitValue()
         {
-            this.tbFolderPath.Text = @"D:\桌面文档\PCR打包\打包upgrade\Release";
+            this.tbFolderPath.Text = @"D:\Release";
             this.tbExt.Text = ".pdb";
-            this.tbContain.Text = "BG1600.Firmware.Upgrade|BG1600.Upgrade|BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
+            this.tbContain.Text = "Upgrade|BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
             this.tbName.Text = "NPOI.OOXML.dll|NPOI.OpenXml4Net.dll|NPOI.OpenXmlFormats.dll";
             this.tbDelForder.Text = "app.publish";
         }
