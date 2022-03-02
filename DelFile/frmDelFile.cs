@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace DelFile
     {
         public frmDelFile()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         private void frmDelFile_Load(object sender, EventArgs e)
@@ -27,11 +28,16 @@ namespace DelFile
         /// </summary>
         private void InitValue()
         {
-            this.tbFolderPath.Text = @"D:\Release";
+            this.cbModel.Items.Add("Q1600");
+            this.cbModel.Items.Add("Q3200");
+            this.cbModel.SelectedIndex = 0;
+
+            this.tbFolderPath.Text = @"D:\桌面文档\PCR打包\打包upgrade\Release";
+            this.tbDelForder.Text = "All";
             this.tbExt.Text = ".pdb";
-            this.tbContain.Text = "Upgrade|BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
-            this.tbName.Text = "NPOI.OOXML.dll|NPOI.OpenXml4Net.dll|NPOI.OpenXmlFormats.dll";
-            this.tbDelForder.Text = "app.publish";
+            this.tbContain.Text = "BG1600.Upgrade|BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
+            //this.tbName.Text = "NPOI.OOXML.dll|NPOI.OpenXml4Net.dll|NPOI.OpenXmlFormats.dll";
+            this.tbName.Text = "BG1600.Firmware.Upgrade.exe.config|BG1600.Firmware.Upgrade.pdb";
         }
 
         private void btnSelect_Click(object sender, EventArgs e)
@@ -78,6 +84,34 @@ namespace DelFile
                 DelName(strFolderPath);
                 DelContain(strFolderPath);
             }
+            Clipboard.SetText(strFolderPath);
+            this.lbDelStatus.Text = "删除成功";
+            btnStart_Click(sender, e);
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            if (System.Diagnostics.Process.GetProcessesByName("WindowsFormsApp11").ToList().Count > 0)
+            {
+                MessageBox.Show("打包程序已经开始运行！");
+            }
+            else
+            {
+                string baseDir = @"D:\桌面文档\PCR打包\打包upgrade\PCR打包程序";
+                Process startProc = new Process();
+                startProc.StartInfo.FileName = System.IO.Path.Combine(baseDir, "Bg1600UpgradeFileCreate.exe");  //就是你要打开的文件的详细路径
+                startProc.StartInfo.UseShellExecute = true;
+                startProc.StartInfo.WorkingDirectory = baseDir; //就是如APGIS.Tools.exe 执行文件是在那个文件夹下。
+                try
+                {
+                    startProc.Start();
+                    System.Threading.Thread.Sleep(500);
+                }
+                catch (System.ComponentModel.Win32Exception)
+                {
+                    MessageBox.Show("打包程序启动失败！");
+                }
+            }
         }
         /// <summary>
         /// 删除文件夹名
@@ -85,17 +119,31 @@ namespace DelFile
         /// <param name="strPath"></param>
         private void DelFolderName(string strPath)
         {
-            List<string> lstFolder = this.tbDelForder.Text.Split('|').ToList();
-            foreach (string folderPath in Directory.GetDirectories(strPath))
+            string strForder = this.tbDelForder.Text.Trim();
+            if (strForder == "All")
             {
-                if (Directory.Exists(folderPath))
+                foreach (string folderPath in Directory.GetDirectories(strPath))
                 {
-                    int index = folderPath.LastIndexOf('\\');
-                    string folderName = folderPath.Substring(index + 1, folderPath.Length - index - 1);
-                    if (lstFolder.Contains(folderName))
-                        Directory.Delete(folderPath,true);
+                    if (Directory.Exists(folderPath))
+                    {
+                        Directory.Delete(folderPath, true);
+                    }
                 }
             }
+            else
+            {
+                List<string> lstFolder = this.tbDelForder.Text.Split('|').ToList();
+                foreach (string folderPath in Directory.GetDirectories(strPath))
+                {
+                    if (Directory.Exists(folderPath))
+                    {
+                        int index = folderPath.LastIndexOf('\\');
+                        string folderName = folderPath.Substring(index + 1, folderPath.Length - index - 1);
+                        if (lstFolder.Contains(folderName))
+                            Directory.Delete(folderPath, true);
+                    }
+                }
+            }            
         }
         /// <summary>
         /// 删除后缀名
@@ -174,5 +222,18 @@ namespace DelFile
             }
         }
 
+        private void cbModel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbModel.SelectedIndex == 0)//Q1600
+            {
+                this.tbContain.Text = "BG1600.Upgrade|BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
+                this.tbName.Text = "BG1600.Firmware.Upgrade.exe.config|BG1600.Firmware.Upgrade.pdb";
+            }
+            else if(cbModel.SelectedIndex == 1)//Q3200
+            {
+                this.tbContain.Text = "BouncyCastle.Crypto|ICSharpCode.SharpZipLib";
+                this.tbName.Text = "Firmware.Upgrade.exe.config|Firmware.Upgrade.pdb|Upgrade.exe";
+            }
+        }
     }
 }
